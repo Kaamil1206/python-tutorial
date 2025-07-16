@@ -20,6 +20,10 @@ def processCommand(c):
         webbrowser.open("http://facebook.com")
     elif "open instagram" in c.lower():
         webbrowser.open("http://instagram.com")
+    elif c.lower().startswith("play"):
+        song=c.lower().split(" ")[1]
+        link=musicliberary.music[song]
+        webbrowser.open(link)
 # Main program
 if __name__ == "__main__":
     speak("Initializing Jarvis....")
