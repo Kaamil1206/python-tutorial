@@ -1,51 +1,28 @@
-# 🐍 Learning Python - My Journey
+# 🤖 Jarvis AI Assistant (Python)
 
-## 👋 About Me
-Hi! I'm Kaamil, a student passionate about learning programming. I'm currently learning **Python**, and this repository is a collection of everything I’m practicing and building.
-
----
-
-## 📚 What This Repo Contains
-- 🔤 Basics of Python (variables, data types, loops, functions)
-- 🧮 Mini Projects (calculator, guessing game, etc.)
-- 📁 Practice Files and Notes
-- 📌 Important Python Concepts with examples
+## 👋 About This Project
+Hi! I'm Kaamil, a student currently learning Python. This is my **Jarvis-like AI Assistant** project. It's an interactive voice-based assistant that can talk to you and perform tasks like opening apps, answering questions, playing music, and more!
 
 ---
 
-## 📈 Progress Tracker
-| Date       | Topic Covered                          | Notes |
-|------------|----------------------------------------|-------|
-| 2025-07-17 | Variables and Data Types               | ✔️    |
-| 2025-07-18 | If-else, loops                         | 🔄    |
-| 2025-07-19 | Functions and Input/Output             | ⏳    |
-| ...        | ...                                    | ...   |
+## 🚀 Features
+- 🎙️ Voice Input & Output
+- 🌐 Internet Search (Google, Wikipedia, etc.)
+- 🎵 Play Music from Local/Online Sources
+- 🕒 Tell Time and Date
+- 🖥️ Open Applications (like Chrome, VS Code, etc.)
+- 💬 Custom Responses
+- 🔒 Password Protected Mode *(Optional)*
 
 ---
 
-## 🛠️ Projects I'm Working On
-- 🎲 Guess the Number Game
-- 📅 To-Do List CLI
-- 🧠 Quiz App
-- 💬 Simple Chatbot
+## 🛠️ Tech Stack
+- 🐍 Python
+- 🎤 `speech_recognition`
+- 🗣️ `pyttsx3` (Text-to-Speech)
+- 🌐 `wikipedia`, `webbrowser`, `requests`
+- 🎵 `pygame` or `playsound`
 
 ---
 
-## 📝 Notes and Resources
-- [W3Schools Python Tutorial](https://www.w3schools.com/python/)
-- [Python Docs](https://docs.python.org/3/)
-- [FreeCodeCamp YouTube](https://www.youtube.com/c/Freecodecamp)
-- My own notes in the `/notes` folder
-
----
-
-## 🚀 Goals
-- ✅ Finish Python basics
-- ✅ Build 5 small projects
-- ⏳ Start learning object-oriented programming
-- ⏳ Learn Flask or Django for web development
-
----
-
-## 💬 Let's Connect
-If you're also learning Python, feel free to fork this repo, star it, or open an issue to ask or discuss something!
+## 📁 Project Structure
