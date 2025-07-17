@@ -18,15 +18,20 @@ def open_site(url):
 # Play song with fuzzy matching
 def play_song_fuzzy(spoken_name):
     song_list = list(musicliberary.music.keys())
-    match = get_close_matches(spoken_name, song_list, n=1, cutoff=0.5)
+    match = get_close_matches(spoken_name.lower(), [s.lower() for s in song_list], n=1, cutoff=0.5)
+    
     if match:
-        best_match = match[0]
+        # Find the original key from lowercase match
+        for key in musicliberary.music:
+            if key.lower() == match[0]:
+                best_match = key
+                break
         speak(f"Playing {best_match}")
         webbrowser.open(musicliberary.music[best_match])
     else:
         speak("Sorry, I couldn't find a song matching that name.")
 
-# Site commands
+# Website shortcuts
 site_commands = {
     "open google": lambda: open_site("http://google.com"),
     "open whatsapp": lambda: open_site("http://whatsapp.com"),
@@ -35,7 +40,7 @@ site_commands = {
     "open instagram": lambda: open_site("http://instagram.com")
 }
 
-# Process commands including exit
+# Command processor
 def processCommand(c):
     c = c.lower().strip()
 
@@ -54,31 +59,32 @@ def processCommand(c):
     else:
         speak("Sorry, I didn't understand that command.")
 
+# Main driver
 if __name__ == "__main__":
     speak("Initializing Jarvis... Say 'Jarvis' to start.")
     r = sr.Recognizer()
 
-    # Wait for wake word
+    # Wake word loop
     while True:
         try:
             with sr.Microphone() as source:
                 print("Waiting for 'Jarvis'...")
                 audio = r.listen(source, timeout=2, phrase_time_limit=2)
-                wake = r.recognize_google(audio)
+                wake = r.recognize_google(audio).lower()
 
-                if wake.lower() == "jarvis":
+                if wake == "jarvis":
                     speak("Yes, I'm listening.")
                     break
         except Exception as e:
             print(f"Wake word error: {e}")
 
-    # Jarvis active mode
+    # Active listening loop
     while True:
         try:
             with sr.Microphone() as source:
                 print("Listening for command...")
                 audio = r.listen(source)
-                command = r.recognize_google(audio)
+                command = r.recognize_google(audio).lower()
                 print(f"Command: {command}")
                 processCommand(command)
         except Exception as e:

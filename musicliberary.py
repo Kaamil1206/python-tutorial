@@ -1,4 +1,4 @@
-music_library = {
+music = {
     "heer aasmani (from 'fighter')": "https://open.spotify.com/track/68hDecrVQCvVtzcYcvFMJX",
     "mauja hi mauja": "https://open.spotify.com/track/2iXVckhPy7tP0wV9DvlrjZ",
     "deja vu": "https://open.spotify.com/track/6HU7h9RYOaPRFeh0R3UeAr",
