@@ -1,79 +1,85 @@
 import speech_recognition as sr
 import webbrowser
 import pyttsx3
-import musicliberary
+from difflib import get_close_matches
+import sys
+import musicliberary  # Your music dictionary file
 
-# Speak text using pyttsx3
+# Speak function
 def speak(text):
     engine = pyttsx3.init()
     engine.say(text)
     engine.runAndWait()
 
-# Action functions
+# Open websites
 def open_site(url):
     webbrowser.open(url)
 
-def play_song(song):
-    link = musicliberary.music.get(song)
-    if link:
-        webbrowser.open(link)
+# Play song with fuzzy matching
+def play_song_fuzzy(spoken_name):
+    song_list = list(musicliberary.music.keys())
+    match = get_close_matches(spoken_name, song_list, n=1, cutoff=0.5)
+    if match:
+        best_match = match[0]
+        speak(f"Playing {best_match}")
+        webbrowser.open(musicliberary.music[best_match])
     else:
-        speak(f"I couldn't find the song {song}")
+        speak("Sorry, I couldn't find a song matching that name.")
 
-# Command dictionary
-command_map = {
+# Site commands
+site_commands = {
     "open google": lambda: open_site("http://google.com"),
     "open whatsapp": lambda: open_site("http://whatsapp.com"),
     "open youtube": lambda: open_site("http://youtube.com"),
     "open facebook": lambda: open_site("http://facebook.com"),
-    "open instagram": lambda: open_site("http://instagram.com"),
+    "open instagram": lambda: open_site("http://instagram.com")
 }
 
-# Command processing
+# Process commands including exit
 def processCommand(c):
-    c = c.lower()
+    c = c.lower().strip()
 
-    for trigger, action in command_map.items():
-        if trigger in c:
+    if "exit" in c or "jarvis exit" in c:
+        speak("Goodbye, Kaamil! Shutting down.")
+        sys.exit()
+
+    for phrase, action in site_commands.items():
+        if phrase in c:
             action()
             return
 
     if c.startswith("play "):
-        song = c.split(" ", 1)[1]
-        play_song(song)
+        song_name = c[5:].strip()
+        play_song_fuzzy(song_name)
     else:
         speak("Sorry, I didn't understand that command.")
 
-# Main function
 if __name__ == "__main__":
     speak("Initializing Jarvis... Say 'Jarvis' to start.")
-
     r = sr.Recognizer()
 
-    # Step 1: Wait for wake word once
+    # Wait for wake word
     while True:
         try:
             with sr.Microphone() as source:
                 print("Waiting for 'Jarvis'...")
                 audio = r.listen(source, timeout=2, phrase_time_limit=2)
-            word = r.recognize_google(audio)
+                wake = r.recognize_google(audio)
 
-            if word.lower() == "jarvis":
-                speak("Yes, I'm listening.")
-                break  # Exit wake word loop
-
+                if wake.lower() == "jarvis":
+                    speak("Yes, I'm listening.")
+                    break
         except Exception as e:
             print(f"Wake word error: {e}")
 
-    # Step 2: Continuous command mode (Jarvis is active)
+    # Jarvis active mode
     while True:
         try:
             with sr.Microphone() as source:
                 print("Listening for command...")
                 audio = r.listen(source)
-            command = r.recognize_google(audio)
-            print(f"Command: {command}")
-            processCommand(command)
-
+                command = r.recognize_google(audio)
+                print(f"Command: {command}")
+                processCommand(command)
         except Exception as e:
             print(f"Command error: {e}")
