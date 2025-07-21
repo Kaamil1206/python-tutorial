@@ -13,7 +13,11 @@ import spacy
 nlp = spacy.load("en_core_web_sm")
 
 # Load OpenAI API Key
-openai.api_key = "YOUR_OPENAI_API_KEY"
+openai.api_key = "YOUR_OPENAI_API_KEY"  # Replace with your API Key
+
+# ----------------------- Playlist URL -----------------------
+
+playlist_url = "https://open.spotify.com/playlist/7q1sJnepIBWPhECLW2lS2O?si=f06aba68f5ec4ade"
 
 # ----------------------- Speech Functions -----------------------
 
@@ -43,6 +47,10 @@ def play_song_fuzzy(spoken_name):
         webbrowser.open(musicliberary.music[best_match])
     else:
         speak("Sorry, I couldn't find a matching song.")
+
+def play_playlist():
+    speak("Playing your playlist.")
+    webbrowser.open(playlist_url)
 
 # ----------------------- Memory System -----------------------
 
@@ -94,16 +102,23 @@ def chat_with_gpt(prompt):
 
 def interpret_command(command):
     doc = nlp(command)
+    
+    if "playlist" in command and "play" in command:
+        return "play_playlist", None
+
     if any(token.lemma_ == "play" for token in doc):
         for chunk in doc.noun_chunks:
             if chunk.root.dep_ in ["dobj", "pobj"]:
                 return "play_song", chunk.text
+
     if "open" in command:
         for site in site_commands:
             if site.replace("open ", "") in command:
                 return "open_site", site
+
     if "name" in command and "my" in command:
         return "remember_name", command
+
     return "chat", command
 
 # ----------------------- Website Shortcuts -----------------------
@@ -122,6 +137,8 @@ def process_command(command):
     task, value = interpret_command(command)
     if task == "play_song":
         play_song_fuzzy(value)
+    elif task == "play_playlist":
+        play_playlist()
     elif task == "open_site":
         site_commands[value]()
     elif task == "remember_name":
@@ -165,3 +182,6 @@ if __name__ == "__main__":
         user_command = listen_for_input("What can I do for you?")
         if user_command:
             process_command(user_command)
+            if "exit" in user_command or "quit" in user_command:
+                speak("Goodbye!")
+                sys.exit()
