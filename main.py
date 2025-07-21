@@ -5,14 +5,23 @@ from difflib import get_close_matches
 import sys
 import musicliberary  # Your music dictionary file
 import time
+import openai
+import json
+import spacy
+
+# Load NLP model
+nlp = spacy.load("en_core_web_sm")
+
+# Load OpenAI API Key
+openai.api_key = "YOUR_OPENAI_API_KEY"
 
 # ----------------------- Speech Functions -----------------------
 
 def speak(text):
     engine = pyttsx3.init()
-    engine.setProperty('rate', 160)  # Speed of speech
+    engine.setProperty('rate', 160)
     voices = engine.getProperty('voices')
-    engine.setProperty('voice', voices[1].id)  # Choose female voice; use [0] for male
+    engine.setProperty('voice', voices[1].id)
     engine.say(text)
     engine.runAndWait()
 
@@ -25,7 +34,6 @@ def open_site(url):
 def play_song_fuzzy(spoken_name):
     song_list = list(musicliberary.music.keys())
     match = get_close_matches(spoken_name.lower(), [s.lower() for s in song_list], n=1, cutoff=0.5)
-
     if match:
         for key in musicliberary.music:
             if key.lower() == match[0]:
@@ -35,6 +43,68 @@ def play_song_fuzzy(spoken_name):
         webbrowser.open(musicliberary.music[best_match])
     else:
         speak("Sorry, I couldn't find a matching song.")
+
+# ----------------------- Memory System -----------------------
+
+def load_memory():
+    try:
+        with open("memory.json", "r") as f:
+            return json.load(f)
+    except:
+        return {}
+
+def save_memory(data):
+    with open("memory.json", "w") as f:
+        json.dump(data, f, indent=4)
+
+memory = load_memory()
+
+def remember_user_name(command):
+    if "my name is" in command:
+        name = command.split("my name is")[-1].strip().capitalize()
+        memory["name"] = name
+        save_memory(memory)
+        speak(f"Nice to meet you, {name}!")
+
+def identify_user():
+    name = memory.get("name")
+    if name:
+        speak(f"Welcome back, {name}!")
+    else:
+        speak("Hi, I don't know your name yet. Please tell me by saying 'My name is ...'")
+
+# ----------------------- OpenAI ChatGPT -----------------------
+
+def chat_with_gpt(prompt):
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant named Jarvis."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        answer = response['choices'][0]['message']['content']
+        speak(answer)
+    except Exception as e:
+        speak("Sorry, I couldn't connect to ChatGPT right now.")
+        print("OpenAI error:", e)
+
+# ----------------------- NLP Interpreter -----------------------
+
+def interpret_command(command):
+    doc = nlp(command)
+    if any(token.lemma_ == "play" for token in doc):
+        for chunk in doc.noun_chunks:
+            if chunk.root.dep_ in ["dobj", "pobj"]:
+                return "play_song", chunk.text
+    if "open" in command:
+        for site in site_commands:
+            if site.replace("open ", "") in command:
+                return "open_site", site
+    if "name" in command and "my" in command:
+        return "remember_name", command
+    return "chat", command
 
 # ----------------------- Website Shortcuts -----------------------
 
@@ -49,22 +119,15 @@ site_commands = {
 # ----------------------- Command Processor -----------------------
 
 def process_command(command):
-    command = command.lower().strip()
-
-    if "exit" in command or "shutdown" in command:
-        speak("Goodbye, Kaamil! Shutting down.")
-        sys.exit()
-
-    for phrase, action in site_commands.items():
-        if phrase in command:
-            action()
-            return
-
-    if command.startswith("play "):
-        song_name = command.replace("play ", "").strip()
-        play_song_fuzzy(song_name)
-    else:
-        speak("Sorry, I didn't understand that command.")
+    task, value = interpret_command(command)
+    if task == "play_song":
+        play_song_fuzzy(value)
+    elif task == "open_site":
+        site_commands[value]()
+    elif task == "remember_name":
+        remember_user_name(value)
+    elif task == "chat":
+        chat_with_gpt(value)
 
 # ----------------------- Voice Assistant -----------------------
 
@@ -94,7 +157,7 @@ if __name__ == "__main__":
     while True:
         wake_word = listen_for_input()
         if wake_word and "jarvis" in wake_word:
-            speak("Yes Kaamil, I'm listening.")
+            identify_user()
             break
 
     # Command listening loop
